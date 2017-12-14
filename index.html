@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>string to int</title>
+    <link rel="stylesheet" type="text/css" href="custom.css">
+</head>
+
+<body>
+    <h1>String to int converter</h1>
+    <div class="container">
+        <div class="row">
+            <textarea id="input"></textarea>
+        </div>
+        <div class="row function_area">
+            <label class="sw_class">
+                <p>int32</p>
+                <input type="checkbox" id="sw_bytes" class="sw" name="">
+                <p>int64</p>
+            </label>
+            <label class="sw_class">
+                <p>hex</p>
+                <input type="checkbox" id="sw_base10" class="sw" name="">
+                <p>dec</p>
+            </label>
+            <button id="runbtn" class="btn">run splitter</button>
+            <button id="copybtn" class="btn">copy result</button>
+        </div>
+        <div class="row">
+            <p id="output"></p>
+        </div>
+    </div>
+    <!-- script -->
+    <script type="text/javascript" defer>
+    var textArea = document.getElementById("input");
+    var runBtn = document.getElementById("runbtn");
+    var copyBtn = document.getElementById("copybtn");
+    var outArea = document.getElementById("output");
+    var sw_bytes = document.getElementById("sw_bytes");
+    var sw_base10 = document.getElementById("sw_base10");
+
+    //sw_base10.addEventListener("click", handler);
+
+    let strToHex = (str, bytes) => {
+        //let str = textArea.value;
+        console.log("strToHex, bytes: " + bytes);
+
+        //看一下網址裡面的回答(Beejor回答的那一個)https://stackoverflow.com/questions/14430633/how-to-convert-text-to-binary-code-in-javascript
+
+        //正規表達式 /[^]{1,4}/g 等於比對所有字元包含換行
+        //用match抓出要的，每四個為一組
+        let regex = new RegExp("[^]{1," + bytes + "}" , "g");
+        str = str.match(regex);
+        console.log(str);
+
+        let concat_str = "", out_str = "{ ";
+
+        //使用右邊的程式可以接字串，效能比較好一些 out_str = str1.concat(str2);
+        // ---HEX ver.---
+        // i+=4 以後可以換成for int32 或是 int64兩種狀況，這樣就有4跟8兩種可能
+        for (let i = 0; i < str.length; i++) {
+            // str[i]
+            concat_str = "";
+            for (let j = 0; j < str[i].length ; j++) {
+                let codeHex = str[i].charCodeAt(j).toString(16);
+                console.log(str[i][j] + " : " + codeHex);
+                if (codeHex.length < 2) {
+                    codeHex = "0" + codeHex;
+                }else if (codeHex.length > 2){
+                    //處理textArea裡面含有非ascii的字元狀況，目前的版本只限於ascii，所以就先顯示error然後直接return
+                    // outArea.innerText = "ERROR! The input text contain invalid character. (not ascii character)";
+                    return;
+                }
+                concat_str = codeHex.concat(concat_str);
+            }
+            concat_str = "0x".concat(concat_str);
+            console.log(concat_str);
+            out_str = out_str.concat(concat_str);
+            if(i < str.length - 1)
+                out_str = out_str.concat(", ");
+        }
+        console.log(out_str);
+        //結尾無條件補0這樣才不會存取到其他地方去，或是之後做判斷，如果4bytes的空間沒有吃滿，如:0x323331只吃了三個byte最後一個byte是0，那就表示結尾有0了就不用在補
+        // out_str = out_str.concat(", 0x0 };");
+        return out_str.concat(", 0x0 };");
+        // ---HEX ver end.---
+    }
+
+    let strToDec = (str, bytes) => {
+        //let str = textArea.value;
+        console.log("strToDec, bytes: " + bytes);
+
+        //看一下網址裡面的回答(Beejor回答的那一個)https://stackoverflow.com/questions/14430633/how-to-convert-text-to-binary-code-in-javascript
+
+        //正規表達式 /[^]{1,4}/g 等於比對所有字元包含換行
+        //用match抓出要的，每四個為一組
+        let regex = new RegExp("[^]{1," + bytes + "}" , "g");
+        str = str.match(regex);
+        console.log(str);
+
+        let sum = 0, out_str = "{ ";
+
+        //使用右邊的程式可以接字串，效能比較好一些 out_str = str1.concat(str2);
+        // ---DEC ver.---
+        // i+=4 以後可以換成for int32 或是 int64兩種狀況，這樣就有4跟8兩種可能
+        for (let i = 0; i < str.length; i++) {
+            // str[i]
+            sum = 0;
+            for (let j = 0; j < str[i].length ; j++) {
+                // let codeHex = str[i].charCodeAt(j).toString(16);
+                let codeDec = str[i].charCodeAt(j);
+                console.log(str[i][j] + " : " + codeDec);
+                if (codeDec < 256) {
+                    sum += codeDec * Math.pow(256, j);
+                }else {
+                    //處理textArea裡面含有非ascii的字元狀況，目前的版本只限於ascii，所以就先顯示error然後直接return
+                    // outArea.innerText = "ERROR! The input text contain invalid character. (not ascii character)";
+                    return;
+                }
+            }
+            //concat_str = "0x".concat(concat_str);
+            console.log(sum);
+            out_str = out_str.concat(sum);
+            if(i < str.length - 1)
+                out_str = out_str.concat(", ");
+        }
+        console.log(out_str);
+        //結尾無條件補0這樣才不會存取到其他地方去，或是之後做判斷，如果4bytes的空間沒有吃滿，如:0x323331只吃了三個byte最後一個byte是0，那就表示結尾有0了就不用在補
+        // out_str = out_str.concat(", 0x0 };");
+        return out_str.concat(", 0x0 };");
+        // ---DEC ver end.---
+    }
+
+    runBtn.onclick = (e) => {
+        //e.preventDefault();
+        console.log("runBtn.onclick");
+        //1.先解決換行問題(直接把換行符號置換成空格)
+        //2.之後再過濾句點
+        //3.過濾的句點置換成句點和換行
+        //let str = textArea.value.replace(/\n/g, " "); //1.
+        //str = str.replace(/(\. )/g, ".\n");
+
+        const err_msg = "ERROR! The input text contain invalid character. (not ascii character)";
+        let str = textArea.value;
+
+        let isBase10 = sw_base10.checked; //isBase10回傳true就是選了dec，false就是選了預設值也就是hex
+
+        //prevent the issue int64 type browser is not support.
+        if (isBase10 && (sw_bytes.checked == true)) {
+            sw_bytes.checked = false;
+            //如果剛好dec和int64同時被選取那麼要將int64選項改回int32
+            //原因是目前瀏覽器還不能支援到int64的運算(數字範圍只在[-2^53, 2^53] 範圍內，真是拜預設都當做double所賜阿^^)
+        }
+
+        let bytes = sw_bytes.checked ? 8 : 4; //sw_bytes.checked 如果是true會回傳8，false會回傳4(預設值)
+
+        if (str != "") {
+            //如strToHex(str)回傳null，則outArea.innerText會等於後面的錯誤訊息字串
+            outArea.innerText = (isBase10 ? strToDec(str, bytes) : strToHex(str, bytes)) || err_msg;
+        }
+
+    }
+
+    copyBtn.onclick = () => {
+        console.log("copyBtn.onclick");
+        var range = document.createRange();
+        range.selectNode(outArea);
+        document.getSelection().removeAllRanges();
+        window.getSelection().addRange(range);
+        document.execCommand("copy");
+
+        // outArea.select();
+        // document.execCommand("Copy");
+        document.getSelection().removeAllRanges();
+    }
+    </script>
+</body>
+</html>
